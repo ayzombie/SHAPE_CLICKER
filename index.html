@@ -1,131 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="stylesheet" href="style.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  body {
-    display: flex;
-    flex-direction: column;
-    justify-content: top;
-    align-items: center;
-    min-height: 200vh;
-    background: linear-gradient(to right, #74ebd5, #acb6e5);
-    font-family: Arial, sans-serif;
-    margin: 0;
-  }
-  h1 { 
-    font-size: 5rem; 
-    margin: 10px; 
-  }
-  p {
-    font-weight: bolder;
-    font-size: 35px;
-    color: red;
-  }
-  #score {
-    font-size: 2rem;
-    font-weight: bolder;
-    padding: 20px;
-  }
-  #multiplier {
-    font-size: 1.3rem;
-    color: red;
-    font-weight: normal;
-  }
 
-  #MoreUpgradesButton{
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    color: green;
-    background-color: white;
-  }
-
-  .raindrop {
-    position: absolute;
-    width: 5px;
-    height: 10px;
-    background: blue;
-    border-radius: 50%;
-  }
-
-
-
-  @keyframes fall {
-    from { transform: translateY(-50px); opacity: 1; }
-    to { transform: translateY(500px); opacity: 0; }
-  }
-  
-  @keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-  }
-  @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-  }
-
-  .fade {
-    animation: fadeOut 1s forwards; /* 1 second fade */
-  }
-
-  .fadein {
-    animation: fadeIn 1s forwards; /* 1 second fade in */
-  }
-
-
-
-  @keyframes popEffect {
-  0% { transform: scale(1); color: red; font-size: 2.5rem; font-weight: bold;}
-  50% { transform: scale(12); color: gold; text-shadow: 0 0 15px gold; font-size: 3rem; font-weight: bolder;}
-  100% { transform: scale(1); color: red; text-shadow: none; font-size: 2rem; font-weight: normal;}
-}
-
-@keyframes discountPopup {
-  0%   { transform: scale(0); opacity: 1; color: gold; font-size: 2rem; font-weight: bold; }
-  50%  { transform: scale(4); opacity: 1; color: red; text-shadow: 0 0 20px gold; font-size: 4rem; font-weight: bolder; }
-  100% { transform: scale(0); opacity: 0; color: gold; text-shadow: none; font-size: 1rem; font-weight: normal; }
-}
-
-.discount-popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  animation: discountPopup 0.85s ease-out forwards;
-  pointer-events: none;
-  z-index: 9999;
-}
-
-
-.animate-multi {
-  animation: popEffect 1s ease;
-}
-
-  #cps { 
-    font-size: 1.5rem; 
-    margin: 10px; 
-    font-weight: bold; 
-    color: green;
-
-  }
-  button {            
-    padding: 10px 20px;
-    font-size: 1rem;
-    border: none;
-    border-radius: 10px;
-    background: #ff6f61;
-    color: white;
-    cursor: pointer;
-    margin: 5px;
-    transition: transform 0.1s ease, background 0.2s;
-  }
-  button:hover { background: #ff4b3e; }
-  button:active { transform: scale(0.9); }
-  .shop { margin-top: 10px; display: flex; flex-direction: column; align-items: center; }
-  canvas { position: absolute; top: 0; left: 0; z-index: -1; }
-</style>
 </head>
 <body>
 
@@ -163,10 +42,12 @@
 
 <button id="waterPathBtn" onclick="waterPath()">Water Path</button>
 
-<button id="MoreUpgradesButton" onclick="showButtons()">More Upgrades</button>
+<button id="MoreUpgradesButton" onclick="showButtons()">Paths</button>
 <button id="rain" onclick="buyRain()">Rain - Cost: 1000000</button>
 <button id="snakeBtn" onclick="buySnake()">Snake — Cost: 4000000</button>
+<button id="cloudsBtn" onclick="buyClouds()">Clouds — Cost: 5000000</button>
 <button id="sharkSpawnerBtn" onclick="buySharkSpawner()">Add Shark — Cost: 15000000</button>
+<button id="lightningBtn" onclick="buyLightning()">Lightning — Cost: 20000000</button>
 
 <script>  //start of javascript variables!!!!!!!  
 if ('scrollRestoration' in history) {   // to go to top when start
@@ -209,7 +90,7 @@ let income = 1;
 
 let sharkSpawnerCount = 0;
 let sharkSpawnerCost = 15000000; // adjust price
-let sharkValue = 100;        // points per bounce
+let sharkValue = 1000;        // points per bounce
 
 let balls = [];
 let squares = [];
@@ -217,22 +98,24 @@ let triangles = [];
 let popups = [];
 let raindrops = [];
 let sharks = [];
-
+let clouds = [];
+let lightnings = [];
 
 let rebirthCost = 100000;
 let growingCostMulti = 1.5;
 let multi = 1;
 
 let pickedPath = false;
-
 let unlockedMoreUpgrades = false;
-let rainSpeed = 200;
+let rainSpeed = 100;
 let boughtRain = false;
 let rainInterval = null;
 
 let snake = null;
 let boughtSnake = false;
 let snakeSpawnerCost = 4000000;
+let boughtClouds = false;
+let boughtLightning = false;
 
 let prestigeLevel = 0;        // how many times prestiged
 let prestigePoints = 0;       // total prestige points earned
@@ -242,10 +125,12 @@ let prestigeCost = 1e8;       // base cost to prestige (100 million, adjust as n
 document.getElementById("pathLabel").style.display = "none";  //PATHS: label
 document.getElementById("waterPathBtn").style.display = "none";
 
+document.getElementById("MoreUpgradesButton").style.display = "none";
 document.getElementById("rain").style.display = "none";
 document.getElementById("snakeBtn").style.display = "none";
-document.getElementById("MoreUpgradesButton").style.display = "none";
+document.getElementById("cloudsBtn").style.display = "none";
 document.getElementById("sharkSpawnerBtn").style.display = "none";
+document.getElementById("lightningBtn").style.display = "none";
 
 const input = document.getElementById("num");
 const button = document.getElementById("submit");
@@ -312,11 +197,12 @@ class Popup {
 // ----- BALL -----
 class Ball {
   constructor(
-    x = Math.random() * (canvas.width - 30) + 15,
-    y = Math.random() * (canvas.height - 30) + 15,
+    x = canvas.width / 2 + (Math.random() - 0.5) * 300,
+    y = canvas.height / 2 + (Math.random() - 0.5) * 500,
     dx = null, dy = null) {
     this.x = x;
     this.y = y;
+    this.electrified = false;
     this.dx = dx !== null ? dx : (Math.random() * 2 - 1) * autoClickerLevel;
     this.dy = dy !== null ? dy : (Math.random() * 2 - 1) * autoClickerLevel;
     this.radius = 15;
@@ -329,6 +215,9 @@ class Ball {
     if (this.x <= 0 || this.x >= canvas.width) {
       this.dx *= -1;
       let gained = income * multi;
+      if (this.electrified) {
+        gained *= 20;
+      }
       score += gained;
       pointsThisInterval += gained;
       popups.push(new Popup(this.x, this.y, gained));
@@ -337,6 +226,9 @@ class Ball {
     if (this.y <= 0 || this.y >= canvas.height) {
       this.dy *= -1;
       let gained = income * multi;
+      if (this.electrified) {
+        gained *= 20;
+      }
       score += gained;
       pointsThisInterval += gained;
       popups.push(new Popup(this.x, this.y, gained));
@@ -346,20 +238,45 @@ class Ball {
 
   draw() {
     ctx.beginPath();
+
+    if (this.electrified) {
+      ctx.save();
+      ctx.shadowColor = "red";
+      ctx.shadowBlur = 50; // steady glow
+      ctx.fillStyle = "#ff2222"; // neon red glow
+    } else {
+      ctx.fillStyle = "#ff988e"; // normal ball color
+    }
+
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    ctx.fillStyle = "#ff6f61";
     ctx.fill();
+
+    if (this.electrified) {
+      ctx.restore();
+
+      // Extra inner glow layer (steady)
+      ctx.save();
+      ctx.shadowColor = "white";
+      ctx.shadowBlur = 40;
+      ctx.fillStyle = "#ff2222";
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius * 0.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
     ctx.closePath();
   }
 }
 // ----- SQUARE -----
 class Square {
   constructor(
-    x = Math.random() * (canvas.width - 30) + 15,
-    y = Math.random() * (canvas.height - 30) + 15,
+    x = canvas.width / 2 + (Math.random() - 0.5) * 300,
+    y = canvas.height / 2 + (Math.random() - 0.5) * 500,
     dx = null, dy = null) {
     this.x = x;
     this.y = y;
+    this.electrified = false;
     this.dx = dx !== null ? dx : (Math.random() * 2 - 1) * autoClickerLevel * 1.5;
     this.dy = dy !== null ? dy : (Math.random() * 2 - 1) * autoClickerLevel * 1.5;
     this.size = 25;
@@ -371,7 +288,8 @@ class Square {
 
     if (this.x <= 0 || this.x + this.size >= canvas.width) {
       this.dx *= -1;
-      let gained = squareValue * multi;
+      let gained = income * multi;
+      if (this.electrified) gained *= 20;
       score += gained;
       pointsThisInterval += gained;
       popups.push(new Popup(this.x, this.y, gained));
@@ -379,7 +297,8 @@ class Square {
     }
     if (this.y <= 0 || this.y + this.size >= canvas.height) {
       this.dy *= -1;
-      let gained = squareValue * multi;
+      let gained = income * multi;
+      if (this.electrified) gained *= 20;
       score += gained;
       pointsThisInterval += gained;
       popups.push(new Popup(this.x, this.y, gained));
@@ -388,17 +307,30 @@ class Square {
   }
 
   draw() {
-    ctx.fillStyle = "#61a0ff";
-    ctx.fillRect(this.x, this.y, this.size, this.size);
+    if (this.electrified) {
+      ctx.save();
+      ctx.shadowColor = "#0ff"; // simple cyan glow
+      ctx.shadowBlur = 15;       // small blur, less lag
+      ctx.fillStyle = "#66ffff"; // slightly light base
+      ctx.fillRect(this.x, this.y, this.size, this.size);
+      ctx.restore();
+
+      // core square
+      ctx.fillStyle = "#66ffff"; // dark cyan
+      ctx.fillRect(this.x, this.y, this.size, this.size);
+    } else {
+      ctx.fillStyle = "#3399cc"; // normal dark cyan
+      ctx.fillRect(this.x, this.y, this.size, this.size);
+    }
   }
 }
 // ----- TRIANGLE -----
 class Triangle {
   constructor(
-    x = Math.random() * (canvas.width - 30) + 15,
-    y = Math.random() * (canvas.height - 30) + 15,
+    x = canvas.width / 2 + (Math.random() - 0.5) * 300,
+    y = canvas.height / 2 + (Math.random() - 0.5) * 500,
     dx = null, dy = null) {
-
+    this.electrified = false;
     this.x = x;
     this.y = y;
     this.dx = dx !== null ? dx : (Math.random() * 2 - 1) * autoClickerLevel * 2;
@@ -412,7 +344,10 @@ class Triangle {
 
     if (this.x <= 0 || this.x + this.size >= canvas.width) {
       this.dx *= -1;
-      let gained = triangleValue * multi;
+      let gained = income * multi;
+      if (this.electrified) {
+        gained *= 20;
+      }
       score += gained;
       pointsThisInterval += gained;
       popups.push(new Popup(this.x, this.y, gained));
@@ -420,7 +355,10 @@ class Triangle {
     }
     if (this.y <= 0 || this.y + this.size >= canvas.height) {
       this.dy *= -1;
-      let gained = triangleValue * multi;
+      let gained = income * multi;
+      if (this.electrified) {
+        gained *= 20;
+      }
       score += gained;
       pointsThisInterval += gained;
       popups.push(new Popup(this.x, this.y, gained));
@@ -429,13 +367,26 @@ class Triangle {
   }
 
   draw() {
-    ctx.fillStyle = "#ffa500";
-    ctx.beginPath();
+    ctx.beginPath(); // always start a new path
+
+    if (this.electrified) {
+      ctx.save();
+      ctx.shadowColor = "#ffff99";
+      ctx.shadowBlur = 15;
+      ctx.fillStyle = "#ffff99";
+    } else {
+      ctx.fillStyle = "#ffa500"; // normal triangle color
+    }
+
+    // draw triangle
     ctx.moveTo(this.x, this.y);                        // top point
     ctx.lineTo(this.x - this.size / 2, this.y + this.size);
     ctx.lineTo(this.x + this.size / 2, this.y + this.size);
     ctx.closePath();
     ctx.fill();
+    if (this.electrified) {
+      ctx.restore();
+    }
   }
 }
 //. ------ RAINDROP THING -------
@@ -453,7 +404,7 @@ class Raindrop {
 
     // If raindrop hits the bottom
     if (this.y + this.height >= canvas.height) {
-      const gained = 1 * multi;  // 1 point per drop, scaled by multiplier
+      const gained = 5 * multi * income;  // 1 point per drop, scaled by multiplier
       score += gained;
       pointsThisInterval += gained;
       popups.push(new Popup(this.x, this.y, gained));
@@ -620,7 +571,7 @@ class Shark {
 
     this.x = x;
     this.y = y;
-    this.dx = dx !== null ? dx : (Math.random() * 2 - 1) * autoClickerLevel;
+    this.dx = dx !== null ? dx : (Math.random() * 2 - 1) * autoClickerLevel * 1.5;
     this.dy = dy !== null ? dy : (Math.random() * 2 - 1) * autoClickerLevel * 1.5;
     this.size = 80; // overall shark size
   }
@@ -632,7 +583,7 @@ class Shark {
     // bounce and gain points
     if (this.x <= 0 || this.x + this.size >= canvas.width) {
       this.dx *= -1;
-      let gained = Math.round(sharkValue) * multi;
+      let gained = Math.round(sharkValue) * multi * income;
       score += gained;
       pointsThisInterval += gained;
       popups.push(new Popup(this.x, this.y, gained));
@@ -642,7 +593,7 @@ class Shark {
 
     if (this.y <= 0 || this.y + this.size >= canvas.height) {
       this.dy *= -1;
-      let gained = Math.round(sharkValue) * multi;
+      let gained = Math.round(sharkValue) * multi * income;
       score += gained;
       pointsThisInterval += gained;
       popups.push(new Popup(this.x, this.y, gained));
@@ -682,6 +633,105 @@ class Shark {
 
 }
 
+class Cloud {
+  constructor(x, y, d) {
+    this.x = x;
+    this.y = y;
+    this.d = d;
+    this.color = "white";
+    this.speed = 0.3 + Math.random() * Math.random() * 6; // gentle random speed
+  }
+
+  update() {
+    this.x += this.speed * this.d;
+    // when cloud goes off screen, loop it back to left
+    if (this.x - 135 > canvas.width) {
+      this.x = -135;
+    }
+    if (this.x + 135 < 0) {
+      this.x = canvas.width + 135;
+    }
+  }
+
+  draw() {
+    ctx.fillStyle = this.color;
+    ctx.save();
+    ctx.scale(1.8, 1);
+
+    ctx.beginPath();
+    ctx.arc(this.x / 1.8, this.y - 10, 60, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc((this.x - 70) / 1.8, this.y + 10, 45, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc((this.x + 70) / 1.8, this.y + 10, 45, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+}
+
+class Lightning {
+  constructor(cloudX, cloudY) {
+    this.x = cloudX; 
+    this.y = cloudY;
+    this.segments = [];
+    this.alpha = 1; 
+    this.createBolt();
+  }
+
+  createBolt() {
+    let x = this.x;
+    let y = this.y + 50; // start just under the cloud
+    this.segments.push({ x, y });
+
+    // jagged line downward
+    while (y < canvas.height - 50) {
+      x += (Math.random() - 0.5) * 40; // zig-zag horizontally
+      y += Math.random() * 40 + 20;   // move down
+      this.segments.push({ x, y });
+    }
+  }
+
+  update() {
+    this.alpha -= 0.05; // fade out quickly
+
+    // check lightning touching shapes
+    for (let shape of [...balls, ...squares, ...triangles, ...sharks]) {
+      for (let seg of this.segments) {
+        let dx = seg.x - shape.x;
+        let dy = seg.y - shape.y;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+
+        if (dist < 30 && Math.random() < 0.05) { // 5% chance
+          shape.electrified = true;
+          shape.electrifiedTimer = 600; // e.g. 10s at 60fps
+        }
+      }
+    }
+
+    return this.alpha > 0;
+  }
+
+  draw() {
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.strokeStyle = "yellow";
+    ctx.shadowColor = "yellow";
+    ctx.shadowBlur = 20;
+    ctx.lineWidth = 15;
+    ctx.beginPath();
+    ctx.moveTo(this.segments[0].x, this.segments[0].y);
+    for (let p of this.segments) {
+      ctx.lineTo(p.x, p.y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+}
 
                                         // Click + upgrades            //ENDD OF  CLASSES!!!!!
 function addPoint() {
@@ -689,9 +739,10 @@ function addPoint() {
   let points = pointsPerClick * multi;
   score += points;
   pointsThisInterval += points;
-
-  // Push numeric popup (don't overwrite .value with a string — see note below)
-  const popup = new Popup(mouse.x, mouse.y, points);
+  if (Math.random() < 0.7) {
+    const plusOnePopup = new Popup(mouse.x, mouse.y - 10, points);
+    popups.push(plusOnePopup);
+  }
 
   updateScore();
 }
@@ -710,9 +761,11 @@ function buyAutoClicker() {             //upgrade speed!
   if (score >= autoClickerCost) {
     score -= autoClickerCost;
     autoClickerLevel++;
+    
     autoClickerCost = Math.floor(autoClickerCost * 1.35);
     balls.forEach(b => { b.dx *= 1.2; b.dy *= 1.2; });
     squares.forEach(s => { s.dx *= 1.2; s.dy *= 1.2; });
+    triangles.forEach(s => { s.dx *= 1.2; s.dy *= 1.2; });
     updateShop();
     updateScore();
   }
@@ -744,7 +797,7 @@ function buyTriangleSpawner() {           //MORE TRIANGLES
   if (score >= triangleSpawnerCost) {
     score -= triangleSpawnerCost;
     triangleSpawnerCount++;
-    triangleSpawnerCost = Math.floor(triangleSpawnerCost * 1.4);
+    triangleSpawnerCost = Math.floor(triangleSpawnerCost * 1.55);
     triangles.push(new Triangle());
     updateShop();
     updateScore();
@@ -782,10 +835,9 @@ function animate() {                  //ANIMATION!
     triangle.draw();
   });
 
-  popups.forEach((p, index) => {
-  p.update();
-  p.draw();
-  if (p.alpha <= 0) popups.splice(index, 1);
+    sharks.forEach(s => {
+  s.update();
+  s.draw();
   });
   
   raindrops = raindrops.filter(drop => {
@@ -794,15 +846,38 @@ function animate() {                  //ANIMATION!
     return alive;
   });
 
-
   if (snake) {
   snake.update();
   snake.draw(ctx);
   }
 
-  sharks.forEach(s => {
-  s.update();
-  s.draw();
+  clouds.forEach(cloud => {
+    cloud.update();
+    cloud.draw();
+  });
+  
+  if (boughtLightning) {
+    if (Math.random() < 0.005 && clouds.length > 0) { 
+      let c = clouds[Math.floor(Math.random() * clouds.length)];
+      let bolt = new Lightning(c.x, c.y);
+      lightnings.push(bolt);
+
+      // ⚡ bonus points happen right here, first frame only
+      score += 500 * multi; 
+      updateScore();
+    }
+
+    lightnings = lightnings.filter(l => {
+      const alive = l.update();
+      l.draw();
+      return alive;
+    });
+  }
+
+  popups.forEach((p, index) => {
+  p.update();
+  p.draw();
+  if (p.alpha <= 0) popups.splice(index, 1);
   });
 
   requestAnimationFrame(animate);
@@ -827,7 +902,7 @@ function updateScore() {
   }
 
   // Unlock more upgrades if score is high enough
-  if (score >= 5000000 && !unlockedMoreUpgrades) {
+  if (score >= 1000000 && !unlockedMoreUpgrades) {
     unlockedMoreUpgrades = true;
     document.getElementById("MoreUpgradesButton").style.display = "block";
   }
@@ -860,7 +935,8 @@ function saveGame() {
     rainSpeed, boughtRain,
     boughtSnake, snake,
     pickedWater,
-    sharkSpawnerCost, sharkSpawnerCount, sharkValue
+    sharkSpawnerCost, sharkSpawnerCount, sharkValue,
+    boughtClouds, boughtLightning
     
   };
   localStorage.setItem("clickerSave", JSON.stringify(saveData));
@@ -897,9 +973,10 @@ function loadGame() {
     raindrops = saved.raindrops || [];
     rainSpeed = saved.rainSpeed || 200;
     boughtRain = saved.boughtRain || false;
+    boughtClouds = saved.boughtClouds || false;
 
     pickedWater = saved.pickedWater || false;
-
+    
     boughtSnake = saved.boughtSnake || false;
     if (boughtSnake) snake = new Snake();
 
@@ -907,6 +984,19 @@ function loadGame() {
     if (boughtRain == true) {
       document.getElementById("rain").style.display = "none";
       startRain();
+    }
+    if (boughtClouds == true) {
+      clouds.push(new Cloud(100, 33, -1));
+      clouds.push(new Cloud(300, 40, 1));
+      clouds.push(new Cloud(600, 35, 1));
+      clouds.push(new Cloud(700, 30, -1));
+      clouds.push(new Cloud(800, 35, 1));
+      clouds.push(new Cloud(1000, 30, -1));
+      clouds.push(new Cloud(1300, 32, -1));
+      clouds.push(new Cloud(1500, 41, 1));
+      clouds.push(new Cloud(1700, 38, -1));
+      clouds.push(new Cloud(2000, 40, -1));
+      document.getElementById("cloudsBtn").style.display = "none";
     }
     if (unlockedMoreUpgrades == true) {
       document.getElementById("MoreUpgradesButton").style.display = "block";
@@ -937,6 +1027,7 @@ function loadGame() {
     squares = [];
     triangles = [];
     raindrops = [];
+    clouds = [];
     sharks = [];
   }
   restorePaths();
@@ -987,12 +1078,14 @@ function restartGame() {
   triangles = [];
   raindrops = [];
   sharks = [];
+  clouds = [];
 
   growingCostMulti = 1.5;
   rebirthCost = 100000;
   unlockedMoreUpgrades = false;
   rainSpeed = 200;
   boughtRain = false;
+  boughtClouds = false;
   
   sharkSpawnerCount = 0;
   sharkSpawnerCost = 15000000;
@@ -1007,6 +1100,8 @@ function restartGame() {
   document.getElementById("snakeBtn").style.display = "none";
   document.getElementById("sharkSpawnerBtn").style.display = "none";
   document.getElementById("waterPathBtn").style.display = "none";
+  document.getElementById("cloudsBtn").style.display = "none";
+  document.getElementById("lightningBtn").style.display = "none";
 
   updateShop();
   updateScore();
@@ -1024,6 +1119,12 @@ function restorePaths() {
     if (boughtSnake == false) {
       document.getElementById("snakeBtn").style.display = "block";
     }
+    if (boughtClouds == false) {
+      document.getElementById("cloudsBtn").style.display = "block";
+    }
+    if (boughtLightning == false) {
+      document.getElementById("lightningBtn").style.display = "block";
+    }
   }
 }
 
@@ -1032,94 +1133,93 @@ function wait(ms) {
 }
 
 async function rebirth() {
-  document.getElementById("rebirth").style.display = "none";
   if (score >= rebirthCost) { // check cost
     multi += 1;
-                                  //the ffing andimation lol!dfsd
-  const multiEl = document.getElementById("multiplier");
-  multiEl.classList.add("animate-multi");
-  setTimeout(() => multiEl.classList.remove("animate-multi"), 1005);
+    document.getElementById("rebirth").style.display = "none";
+    const multiEl = document.getElementById("multiplier");
+    multiEl.classList.add("animate-multi");
+    setTimeout(() => multiEl.classList.remove("animate-multi"), 1005);
 
-  let cur_score = score;
-  
-  while (score > 0) {
-    score -= getRandom(0.001 * cur_score, 0.01 * cur_score);
-    updateScore();
-    if (score < 0) 
-      score = 0;
+    let cur_score = score;
+    
+    while (score > 0) {
+      score -= getRandom(0.001 * cur_score, 0.01 * cur_score);
       updateScore();
-      await wait(1);
-  }
-  score = 0;
-  cur_score = 0;
-  pointsPerClick = 1;
-  upgradeCost = 10;
-  autoClickerLevel = 1;
-  autoClickerCost = 50;
-
-  ballSpawnerCount = 0;
-  ballSpawnerCost = 100;
-
-  squareSpawnerCount = 0;
-  squareSpawnerCost = 200;
-
-  triangleSpawnerCount = 0;
-  triangleSpawnerCost = 500;
-
-  sharkSpawnerCount = 0;
-  sharkSpawnerCost = 15000000;
-  sharkValue = 10; 
-
-  ballValue = 1;
-  squareValue = 2;
-  triangleValue = 5;
-  incomeCost = 1000;
-
-  balls = [];
-  squares = [];
-  triangles = [];
-  raindrops = [];
-  sharks = [];
-
-  growingCostMulti = 1.5;
-  rebirthCost = 100000;
-  unlockedMoreUpgrades = false;
-  rainSpeed = 200;
-  boughtRain = false;
-
-    if (rainInterval) {
-      clearInterval(rainInterval); // stop the rain
-      rainInterval = null;         // reset
+      if (score < 0) 
+        score = 0;
+        updateScore();
+        await wait(1);
     }
-    boughtRain = false;
+    score = 0;
+    cur_score = 0;
+    pointsPerClick = 1;
+    upgradeCost = 10;
+    autoClickerLevel = 1;
+    autoClickerCost = 50;
+
+    ballSpawnerCount = 0;
+    ballSpawnerCost = 100;
+
+    squareSpawnerCount = 0;
+    squareSpawnerCost = 200;
+
+    triangleSpawnerCount = 0;
+    triangleSpawnerCost = 500;
+
+    sharkSpawnerCount = 0;
+    sharkSpawnerCost = 15000000;
+    sharkValue = 10; 
+
+    ballValue = 1;
+    squareValue = 2;
+    triangleValue = 5;
+    incomeCost = 1000;
+
+    balls = [];
+    squares = [];
+    triangles = [];
+    raindrops = [];
+    sharks = [];
+    clouds = [];
+
+    rebirthCost = 100000;
     unlockedMoreUpgrades = false;
-    removeSnake();
+    rainSpeed = 200;
+    boughtRain = false;
+    boughtClouds = false;
 
-    let newRebirthCost = rebirthCost * growingCostMulti;
-    if (newRebirthCost < 1000000) {
-      growingCostMulti *= 1.5;
-    }
-    if (newRebirthCost >= 1000000 && newRebirthCost < 10000000) {
-      growingCostMulti *= 1.1;
-    }
-    if (newRebirthCost >= 10000000 && newRebirthCost< 100000000) {
-      growingCostMulti *= 1.02;
-    }
-    else {
-      growingCostMulti *= 1.01;
-    }
-    rebirthCost = Math.floor(newRebirthCost);
+      if (rainInterval) {
+        clearInterval(rainInterval); // stop the rain
+        rainInterval = null;         // reset
+      }
+      boughtRain = false;
+      unlockedMoreUpgrades = false;
+      removeSnake();
 
-    document.getElementById("rain").style.display = "none";
-    document.getElementById("MoreUpgradesButton").style.display = "none";
-    document.getElementById("pathLabel").style.display = "none";
-    document.getElementById("snakeBtn").style.display = "none";
-    document.getElementById("sharkSpawnerBtn").style.display = "none";
-    document.getElementById("waterPathBtn").style.display = "none";
-    document.getElementById("rebirth").style.display = "block";
-    updateShop();
-    updateScore();
-    saveGame();
+      let newRebirthCost = rebirthCost * growingCostMulti;
+      if (newRebirthCost < 10000000) {
+        growingCostMulti *= 1.7;
+      }
+      if (newRebirthCost >= 10000000 && newRebirthCost <= 100000000) {
+        growingCostMulti *= 1.1;
+      }
+      else {
+        growingCostMulti *= 1.05;
+      }
+      rebirthCost = Math.floor(newRebirthCost);
+
+      document.getElementById("rebirth").style.display = "block";
+      document.getElementById("rain").style.display = "none";
+      document.getElementById("MoreUpgradesButton").style.display = "none";
+      document.getElementById("pathLabel").style.display = "none";
+      document.getElementById("snakeBtn").style.display = "none";
+      document.getElementById("sharkSpawnerBtn").style.display = "none";
+      document.getElementById("waterPathBtn").style.display = "none";
+      document.getElementById("cloudsBtn").style.display = "none";
+      document.getElementById("lightningBtn").style.display = "none";
+      updateShop();
+      updateScore();
+      saveGame();
   }
 }
 
@@ -1150,6 +1250,12 @@ function waterPath() {
   }
   if (boughtSnake == false) {
     document.getElementById("snakeBtn").style.display = "block";
+  }
+  if (boughtClouds == false) {
+    document.getElementById("cloudsBtn").style.display = "block";
+  }
+  if (boughtLightning == false) {
+    document.getElementById("lightningBtn").style.display = "block";
   }
   document.getElementById("sharkSpawnerBtn").style.display = "block";
 }
@@ -1212,6 +1318,26 @@ function removeSnake() {
   }
 }
 
+function buyClouds() {
+  if (!boughtClouds && score >= 500000) { // example cost
+    score -= 500000;
+    boughtClouds = true;
+
+    clouds.push(new Cloud(100, -10, -1));
+    clouds.push(new Cloud(300, -12, 1));
+    clouds.push(new Cloud(600, -5, 1));
+    clouds.push(new Cloud(700, 0, -1));
+    clouds.push(new Cloud(800, -7, 1));
+    clouds.push(new Cloud(1000, -10, -1));
+    clouds.push(new Cloud(1300, -11, -1));
+    clouds.push(new Cloud(1500, -15, 1));
+    clouds.push(new Cloud(1700, -4, -1));
+    clouds.push(new Cloud(2000, -8, -1));
+    clouds.push(new Cloud(1900, -9, 1));
+    rainSpeed = 50;
+  }
+}
+
 function buySharkSpawner() {
   if (score >= sharkSpawnerCost) {
     score -= sharkSpawnerCost;
@@ -1223,9 +1349,28 @@ function buySharkSpawner() {
   }
 }
 
+function buyLightning() {
+  if (score >= 20000000) {
+    score -= 20000000;
+    boughtLightning = true;
 
+    for (let cloud of clouds) {
+      let gradient = ctx.createLinearGradient(cloud.x, cloud.y, cloud.x, cloud.y + 50);
+      gradient.addColorStop(0, "#aaa"); // lighter top
+      gradient.addColorStop(1, "#444"); // darker bottom
+      cloud.color = gradient; // store gradient properly
+    }
 
-loadGame();                   
+    lightningBtn.classList.add("fade");
+    lightningBtn.style.pointerEvents = "none";
+    lightningBtn.addEventListener("animationend", () => {
+      lightningBtn.style.display = "none";
+      lightningBtn.classList.remove("fade");
+    }, { once: true });
+  }
+}
+
+loadGame();
 animate(); 
 </script>
 </body>
