@@ -59,6 +59,8 @@ window.onload = function() {
   window.scrollTo(0, 0);
 };
 
+const SAVE_VERSION = "1.0"; // bump this whenever you want a reset
+
 let pickedWater = false;
 
 let score = 0;
@@ -755,6 +757,19 @@ class Lightning {
   }
 }
 
+function checkSaveVersion() {
+  const currentVersion = localStorage.getItem("save_version");
+
+  if (currentVersion !== SAVE_VERSION) {
+    // Reset all saved data
+    localStorage.clear();
+
+    // Set new version so it won't reset again until you bump it
+    localStorage.setItem("save_version", SAVE_VERSION);
+
+    console.log("Progress reset due to update.");
+  }
+}
                                         // Click + upgrades            //ENDD OF  CLASSES!!!!!
 function addPoint() {
   
@@ -771,14 +786,14 @@ function addPoint() {
 
 function buyUpgrade() {                   //UPGRADE CLICK
   if (score >= upgradeCost) {
-    if (upgradeCost > 10000000) {//10 mil
-      upgradeCost = Math.floor(upgradeCost * 1.25);
-    }
-    else {
-      upgradeCost = Math.floor(upgradeCost * 1.55);
-      }
     score -= upgradeCost;
     pointsPerClick++;
+    if (upgradeCost > 10000000) {//10 mil
+      upgradeCost = Math.floor(upgradeCost * 1.35);
+    }
+    else {
+      upgradeCost = Math.floor(upgradeCost * 1.75);
+    }
     updateShop();
     updateScore();
   }
@@ -788,11 +803,15 @@ function buyAutoClicker() {             //upgrade speed!
   if (score >= autoClickerCost) {
     score -= autoClickerCost;
     autoClickerLevel++;
-    
-    autoClickerCost = Math.floor(autoClickerCost * 1.65);
     balls.forEach(b => { b.dx *= 1.2; b.dy *= 1.2; });
     squares.forEach(s => { s.dx *= 1.2; s.dy *= 1.2; });
     triangles.forEach(s => { s.dx *= 1.2; s.dy *= 1.2; });
+    if (upgradeCost > 10000000) {//10 mil
+      autoClickerCost = Math.floor(autoClickerCost * 1.67);
+    }
+    else {
+      autoClickerCost = Math.floor(autoClickerCost * 2.83);
+    }
     updateShop();
     updateScore();
   }
@@ -1480,6 +1499,7 @@ function upgradeLightning() {
   }
 }
 
+checkSaveVersion();
 loadGame();
 animate(); 
 </script>
